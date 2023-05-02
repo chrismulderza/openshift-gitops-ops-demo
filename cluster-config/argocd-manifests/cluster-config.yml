@@ -15,7 +15,7 @@ spec:
     metadata:
       name: '{{path.basename}}'
     spec:
-      project: "my-project"
+      project: "default"
       source:
 #        repoURL: https://gitops-gitea-cicd-tools.apps-crc.testing/gitopsmgr/openshift-gitops-ops.git
         repoURL: https://github.com/chrismulderza/openshift-gitops-ops-demo.git
