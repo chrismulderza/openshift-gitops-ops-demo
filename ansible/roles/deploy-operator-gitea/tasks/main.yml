@@ -1,0 +1,160 @@
+# code: language=ansible
+#
+---
+- name: "Git Repository Server"
+  ansible.builtin.debug:
+    msg: "Deploying Red Hat GPTE Gitea Operator"
+  tags: [always, gitea]
+
+- name: Import Operator Catalog for Red Hat GPTE Gitea Operator
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: operators.coreos.com/v1alpha1
+      kind: CatalogSource
+      metadata:
+        name: "{{ gitea.operator.source.name }}"
+        namespace: openshift-marketplace
+      spec:
+        sourceType: grpc
+        image: "{{ gitea.operator.source.image }}"
+        displayName: "{{ gitea.operator.source.displayName }}"
+        publisher: "{{ gitea.operator.source.publisher }}"
+  tags: [always, gitea]
+
+- name: Create Operator Subscription for for Red Hat GPTE Gitea Operator
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: operators.coreos.com/v1alpha1
+      kind: Subscription
+      metadata:
+        name: "{{ gitea.operator.subscription.name }}"
+        namespace: "{{ gitea.operator.subscription.namespace }}"
+      spec:
+        channel: "{{ gitea.operator.subscription.channel }}"
+        installPlanApproval: Automatic
+        name: "{{ gitea.operator.subscription.name }}"
+        source: "{{ gitea.operator.subscription.source }}"
+        sourceNamespace: openshift-marketplace
+  tags: [always, gitea]
+
+- name: Wait for Gitea operator
+  ansible.builtin.debug:
+    msg: "Waiting for {{ gitea.operator.subscription.name }} to become ready"
+  tags: [always, gitea]
+
+- name: Check if subscription has completed
+  monitor_operator_install:
+    name: "{{ gitea.operator.subscription.name }}"
+    namespace: "{{ gitea.operator.subscription.namespace }}"
+  tags: [always, gitea]
+
+- name: Get OpenShift projects
+  kubernetes.core.k8s_info:
+    api_version: project.openshift.io/v1
+    kind: Project
+  register: project_list
+  tags: [always, gitea, teardown]
+
+- name: Found projects
+  ansible.builtin.debug:
+    var: >-
+      project_list.resources
+        | selectattr('status.phase', '==', 'Active')
+        | map(attribute='metadata.name')
+  tags: [never, debug]
+
+- name: Create OpenShift project for CI/CD tools
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      kind: Project
+      apiVersion: project.openshift.io/v1
+      metadata:
+        name: "{{ gitea.deployment.project.name }}"
+        labels:
+          kubernetes.io/metadata.name: "{{ gitea.deployment.project.name }}"
+        annotations:
+          openshift.io/description: "{{ gitea.deployment.project.description }}"
+          openshift.io/display-name: "{{ gitea.deployment.project.displayName }}"
+      spec:
+        finalizers:
+          - kubernetes
+  when: not project_list.resources|selectattr('metadata.name', 'contains', 'cicd-tools')
+  tags: [always, gitea]
+
+- name: Create Gitea instance in the CI/CD project
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: gpte.opentlc.com/v1
+      kind: Gitea
+      metadata:
+        name: "{{ gitea.deployment.instance.name }}"
+        namespace: "{{ gitea.deployment.instance.namespace }}"
+      spec:
+        giteaImageTag: latest
+        giteaVolumeSize: 1Gi
+        giteaSsl: true
+        postgresqlVolumeSize: 1Gi
+        giteaAdminUser: gitadmin
+        giteaAdminPassword: pa55w0rd
+        # giteaAdminPasswordLength: 32
+        giteaDisableRegistration: true
+        giteaAdminEmail: repomgr@example.redhat.com
+        giteaCreateUsers: true
+        giteaGenerateUserFormat: gitopsmgr
+        giteaUserNumber: 1
+        giteaUserPassword: openshift
+        giteaUserPasswordLength: 8
+        giteaMigrateRepositories: true
+        giteaRepositoriesList:
+          - repo: https://github.com/chrismulderza/openshift-gitops-ops-demo.git
+            name: openshift-gitops-ops
+            private: false
+  tags: [always, gitea]
+
+- name: Teardown Gitea instance in the CI/CD project
+  kubernetes.core.k8s:
+    state: absent
+    definition:
+      apiVersion: gpte.opentlc.com/v1
+      kind: Gitea
+      metadata:
+        name: "{{ gitea.deployment.instance.name }}"
+        namespace: "{{ gitea.deployment.instance.namespace }}"
+  tags: [never, teardown]
+
+- name: Teardown OpenShift project for CI/CD tools
+  kubernetes.core.k8s:
+    state: absent
+    definition:
+      kind: Project
+      apiVersion: project.openshift.io/v1
+      metadata:
+        name: "{{ gitea.deployment.project.name }}"
+  when: project_list.resources|selectattr('metadata.name', 'contains', 'cicd-tools')
+  tags: [never, teardown]
+
+- name: Teardown Operator Subscription for for Red Hat GPTE Gitea Operator
+  kubernetes.core.k8s:
+    state: absent
+    definition:
+      apiVersion: operators.coreos.com/v1alpha1
+      kind: ClusterServiceVersion
+      metadata:
+        name: gitea-operator.v1.3.0
+        namespace: "{{ gitea.operator.subscription.namespace }}"
+  tags: [never, teardown]
+
+- name: Teardown Operator Catalog for Red Hat GPTE Gitea Operator
+  kubernetes.core.k8s:
+    state: absent
+    definition:
+      apiVersion: operators.coreos.com/v1alpha1
+      kind: CatalogSource
+      metadata:
+        name: "{{ gitea.operator.source.name }}"
+        namespace: openshift-marketplace
+  tags: [never, teardown]

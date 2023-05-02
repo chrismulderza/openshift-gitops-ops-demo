@@ -1,0 +1,10 @@
+---
+- name: ArgoCD CLI
+  debug:
+    msg: "Installing ArgoCD CLI"
+
+- name: Download ArgoCD CLI
+  get_url:
+    url: "{{ argocd_download_url }}"
+    dest: "{{ lookup('env', 'HOME') }}/.local/bin/argocd"
+    mode: 0755

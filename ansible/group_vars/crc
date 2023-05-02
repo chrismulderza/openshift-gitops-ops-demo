@@ -1,0 +1,56 @@
+# Common Variables
+cluster_admin_user: kubeadmin
+
+# Gitea Variables
+gitea:
+  operator:
+    source:
+      name: gitea-operator
+      image: quay.io/gpte-devops-automation/gitea-catalog:latest
+      displayName: Gitea Operator by Red Hat GPTE
+      publisher: Red Hat GPTE
+    subscription:
+      name: gitea-operator
+      namespace: openshift-operators
+      channel: stable
+      source: redhat-gpte-gitea
+  deployment:
+    project:
+      name: cicd-tools
+      description: Project that hosts CI/CD tools
+      displayName: CI/CD Tools
+    instance:
+      name: gitops-gitea
+      namespace: cicd-tools
+
+#ArgoCD Variables
+argocd:
+  operator:
+    subscription:
+      name: openshift-gitops-operator
+      namespace: openshift-operators
+      channel: latest
+      source: redhat-operators
+  deployment:
+    project: 
+      name: openshift-gitops
+    instance:
+      name: openshift-gitops
+      namespace: openshift-gitops
+      adminUser: admin
+  clusterRole:
+    name: quota-limit-cluster-role
+  roleBinding:
+    name: create-quota-limit-global
+    roleRef:
+      name: quota-limit-cluster-role
+    subjects:
+      name: openshift-gitops-argocd-application-controller
+      namespace: openshift-gitops
+
+### CLUSTER GITOPS SETUP 
+cluster_demo_setup_name: cluster-configs
+cluster_demo_setup_project: default
+cluster_demo_setup_path: cluster
+cluster_demo_setup_repo: https://github.com/cainza/openshift-app-dev-demo.git
+cluster_demo_setup_revision: main

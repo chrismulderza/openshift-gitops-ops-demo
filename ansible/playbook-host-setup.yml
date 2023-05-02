@@ -1,0 +1,25 @@
+# code: language=ansible
+---
+- name: Install host pre-requisites
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  tasks:
+    - name: Install Ansible Galaxy Module - kubernetes.core
+      community.general.ansible_galaxy_install:
+        type: collection
+        name: kubernetes.core
+
+    - name: Install Ansible Galaxy Module - community.okd
+      community.general.ansible_galaxy_install:
+        type: collection
+        name: community.okd
+
+    - name: Install Ansible Galaxy Module - community.crypto
+      community.general.ansible_galaxy_install:
+        type: collection
+        name: community.crypto
+
+    - name: Install PIP Package - kubernetes
+      ansible.builtin.pip:
+        name: kubernetes

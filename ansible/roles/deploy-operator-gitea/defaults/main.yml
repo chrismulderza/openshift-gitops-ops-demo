@@ -1,0 +1,21 @@
+# Gitea Operator deployment defaults
+gitea:
+  operator:
+    source:
+      name: gitea-operator
+      image: quay.io/gpte-devops-automation/gitea-catalog:latest
+      displayName: Gitea Operator by Red Hat GPTE
+      publisher: Red Hat GPTE
+    subscription:
+      name: gitea-operator
+      namespace: openshift-operators
+      channel: stable
+      source: redhat-gpte-gitea
+  deployment:
+    project:
+      name: cicd-tools
+      description: Project that hosts CI/CD tools
+      displayName: CI/CD Tools
+    instance:
+      name: gitops-gitea
+      namespace: cicd-tools

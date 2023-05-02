@@ -1,0 +1,24 @@
+# code: language=ansible
+#
+---
+- name: CRC Setup
+  ansible.builtin.debug:
+    msg: "Setting up CRC Environment"
+
+- name: Running crc setup
+  ansible.builtin.command: crc setup
+  register: crc_setup_result
+  changed_when: crc_setup_result.rc == 0
+  failed_when: crc_setup_result.rc != 0
+
+- name: Start CRC
+  ansible.builtin.command: crc start
+  register: crc_start_result
+  changed_when: crc_start_result.rc == 0
+  failed_when: crc_start_result.rc != 0
+
+- name: Check if cluster admin is logged in
+  ansible.builtin.command: oc whoami
+  register: crc_whoami_result
+  changed_when: crc_whoami_result.rc == 0
+  failed_when: 'cluster_admin_user | string not in crc_whoami_result.stdout'

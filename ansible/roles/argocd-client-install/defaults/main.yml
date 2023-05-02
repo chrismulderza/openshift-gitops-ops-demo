@@ -1,0 +1,2 @@
+### ARGOCD CLIENT INSTALL
+argocd_download_url: https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64

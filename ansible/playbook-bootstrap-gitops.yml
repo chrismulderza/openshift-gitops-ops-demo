@@ -1,0 +1,14 @@
+# code: language=ansible
+#
+---
+- name: Bootstrap OpenShift GitOps
+  hosts: crc
+  connection: local
+  gather_facts: false
+  roles:
+#    - crc-setup
+#   - deploy-operator-gitea
+#    - deploy-operator-gitops
+    - deploy-resources-gitops
+#    - argocd-client-install
+#    - crc-credentials

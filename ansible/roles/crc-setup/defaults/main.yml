@@ -1,0 +1,2 @@
+# crc setup defaults
+cluster_admin_user: kubeadmin

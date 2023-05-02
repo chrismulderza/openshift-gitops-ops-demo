@@ -1,0 +1,52 @@
+# code: language=ansible
+#
+---
+- name: GitOps Resources Deployment
+  ansible.builtin.debug:
+    msg: "Deploying OpenShift GitOps resources to ArgoCD"
+  tags: [always, resources]
+
+# Create repository secret
+
+- name: Create git repository secret in ArgoCD
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: git-repo-gitops
+        namespace: openshift-gitops
+        labels:
+          argocd.argoproj.io/secret-type: repository
+      stringData:
+        type: git
+        url: https://gitops-gitea-cicd-tools.apps-crc.testing/gitopsmgr/openshift-gitops-ops.git
+        insecure: 'true'
+        project: default
+        password: openshift
+        username: gitopsmgr
+  tags: [always, resources]
+
+- name: Apply cluster config ApplicationSet
+  kubernetes.core.k8s:
+    state: present
+    src: ../cluster-config/argocd-manifests/cluster-config.yml
+  tags: [always, resources]
+
+- name: Teardown cluster config ApplicationSet
+  kubernetes.core.k8s:
+    state: absent
+    src: ../cluster-config/argocd-manifests/cluster-config.yml
+  tags: [never, teardown]
+
+- name: Teardown git repository secret in ArgoCD
+  kubernetes.core.k8s:
+    state: absent
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: git-repo-gitops
+        namespace: openshift-gitops
+  tags: [never, teardown]

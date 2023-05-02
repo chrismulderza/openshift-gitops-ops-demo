@@ -1,0 +1,24 @@
+# OpenShift GitOps Operator deployment defaults
+argocd:
+  operator:
+    subscription:
+      name: openshift-gitops-operator
+      namespace: openshift-operators
+      channel: latest
+      source: redhat-operators
+  deployment:
+    project:
+      name: openshift-gitops
+    instance:
+      name: openshift-gitops
+      namespace: openshift-gitops
+      adminUser: admin
+  clusterRole:
+    name: quota-limit-cluster-role
+  roleBinding:
+    name: create-quota-limit-global
+    roleRef:
+      name: quota-limit-cluster-role
+    subjects:
+      name: openshift-gitops-argocd-application-controller
+      namespace: openshift-gitops

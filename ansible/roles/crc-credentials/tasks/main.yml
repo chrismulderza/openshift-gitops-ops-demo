@@ -1,0 +1,25 @@
+---
+- name: CRC Credentials
+  debug:
+    msg: "CRC UI & Login Credentials:"
+
+- name: Openshift UI URL
+  command: oc get route/console -n openshift-console --no-headers
+
+- name: Get an existing Service object
+  kubernetes.core.k8s_info:
+    api_version: route.openshift.io/v1
+    kind: Route
+    name: console
+    namespace: openshift-console
+  register: consoleurl
+
+- name: Login Credentials
+  command: crc console --credentials
+  register: crccredentials
+
+- name: Openshift Console URL
+  debug:
+    msg: 
+      - "Openshift Console URL: {{ consoleurl.resources[0].spec.port.targetPort }}://{{ consoleurl.resources[0].spec.host }}"
+      - "{{ crccredentials.stdout_lines[1] }}"
