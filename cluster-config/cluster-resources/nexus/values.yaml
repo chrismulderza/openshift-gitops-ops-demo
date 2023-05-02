@@ -4,7 +4,7 @@
 
 global:
   cicd:
-    namespace: devsecops-ci
+    namespace: cicd-tools
 
 replicaCount: 1
 
@@ -52,4 +52,4 @@ persistentVolumeClaim:
   name: nexus-pv
   accessModes: ReadWriteOnce
   requests:
-    storage: 25Gi
+    storage: 5Gi
