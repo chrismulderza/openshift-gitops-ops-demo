@@ -59,9 +59,14 @@
       metadata:
         name: "{{ argocd.clusterRole.name }}"
       rules:
-        - apiGroups: [""] # specifies core api groups
-          resources: ["resourcequotas", "limitranges"]
-          verbs: ["create"]
+#        - apiGroups: [""] # specifies core api groups
+#          resources: ["resourcequotas", "limitranges"]
+#          verbs: ["create"]
+        - apiGroups:
+            - '*'
+          resources:
+            - '*'
+          verbs: ['get', 'list', 'watch', 'create']
   tags: [always, argocd]
 
 - name: Create role binding
