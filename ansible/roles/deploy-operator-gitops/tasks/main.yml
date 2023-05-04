@@ -50,7 +50,7 @@
     custom_ready_value: Running
   tags: [always, argocd]
 
-- name: Create quota and limit cluster role
+- name: Create management cluster role
   kubernetes.core.k8s:
     state: present
     definition:
@@ -59,9 +59,6 @@
       metadata:
         name: "{{ argocd.clusterRole.name }}"
       rules:
-#        - apiGroups: [""] # specifies core api groups
-#          resources: ["resourcequotas", "limitranges"]
-#          verbs: ["create"]
         - apiGroups:
             - '*'
           resources:
