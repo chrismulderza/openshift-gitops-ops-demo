@@ -1,0 +1,4 @@
+bases:
+- ./teams/team-a
+- ./teams/team-b
+- ./teams/team-c
