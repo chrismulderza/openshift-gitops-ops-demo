@@ -14,11 +14,11 @@ argocd:
       namespace: openshift-gitops
       adminUser: admin
   clusterRole:
-    name: quota-limit-cluster-role
+    name: openshift-gitops-manage-cluster-role
   roleBinding:
-    name: create-quota-limit-global
+    name: openshift-gitops-manage-cluster
     roleRef:
-      name: quota-limit-cluster-role
+      name: openshift-gitops-manage-cluster-role
     subjects:
       name: openshift-gitops-argocd-application-controller
       namespace: openshift-gitops

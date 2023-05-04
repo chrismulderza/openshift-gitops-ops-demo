@@ -31,7 +31,7 @@
 - name: Apply cluster config ApplicationSet
   kubernetes.core.k8s:
     state: present
-    src: ../cluster-config/argocd-manifests/cluster-config.yml
+    src: ../argocd-manifests/cluster-config.yml
   tags: [always, resources]
 
 - name: Teardown cluster config ApplicationSet
