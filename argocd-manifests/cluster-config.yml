@@ -1,0 +1,31 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: gitops-cluster-config
+  namespace: openshift-gitops
+spec:
+  generators:
+  - git:
+#      repoURL: https://gitops-gitea-cicd-tools.apps-crc.testing/gitopsmgr/openshift-gitops-ops.git
+      repoURL: https://github.com/chrismulderza/openshift-gitops-ops-demo.git
+      revision: main
+      directories:
+      - path: cluster-config/*
+  template:
+    metadata:
+      name: '{{path.basename}}'
+    spec:
+      project: "default"
+      source:
+#        repoURL: https://gitops-gitea-cicd-tools.apps-crc.testing/gitopsmgr/openshift-gitops-ops.git
+        repoURL: https://github.com/chrismulderza/openshift-gitops-ops-demo.git
+        targetRevision: HEAD
+        path: '{{path}}'
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: '{{path.basename}}'
+      syncPolicy:
+        automated:
+          prune: true
+        syncOptions:
+        - CreateNamespace=true

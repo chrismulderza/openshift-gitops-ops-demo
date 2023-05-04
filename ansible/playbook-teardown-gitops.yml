@@ -1,0 +1,14 @@
+# code: language=ansible
+#
+---
+- name: Bootstrap OpenShift GitOps
+  hosts: crc
+  connection: local
+  gather_facts: false
+  tasks:
+
+  # Teardown deployed deployed resources
+    - name: Teardown cluster config ApplicationSet
+      kubernetes.core.k8s:
+        state: absent
+        src: ../argocd-manifests/cluster-config.yml
