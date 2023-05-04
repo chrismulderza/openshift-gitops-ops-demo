@@ -4,3 +4,5 @@ metadata:
   name: default-dev
   annotations:
     argocd.argoproj.io/sync-wave: "-1"
+  labels:
+    argocd.argoproj.io/managed-by: openshift-gitops
