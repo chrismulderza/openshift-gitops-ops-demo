@@ -1,14 +1,60 @@
 # code: language=ansible
 #
 ---
-- name: Bootstrap OpenShift GitOps
+- name: Teardown OpenShift GitOps
   hosts: crc
   connection: local
   gather_facts: false
   tasks:
 
+  - name: Get OpenShift projects
+    kubernetes.core.k8s_info:
+      api_version: project.openshift.io/v1
+      kind: Project
+    register: project_list
+
   # Teardown deployed deployed resources
-    - name: Teardown cluster config ApplicationSet
-      kubernetes.core.k8s:
-        state: absent
-        src: ../argocd-manifests/cluster-config.yml
+  - name: Teardown cluster config ApplicationSet
+    kubernetes.core.k8s:
+      state: absent
+      src: ../argocd-manifests/cluster-config.yml
+
+  - name: Teardown Gitea instance in the CI/CD project
+    kubernetes.core.k8s:
+      state: absent
+      definition:
+        apiVersion: gpte.opentlc.com/v1
+        kind: Gitea
+        metadata:
+          name: "{{ gitea.deployment.instance.name }}"
+          namespace: "{{ gitea.deployment.instance.namespace }}"
+
+  - name: Teardown OpenShift project for CI/CD tools
+    kubernetes.core.k8s:
+      state: absent
+      definition:
+        kind: Project
+        apiVersion: project.openshift.io/v1
+        metadata:
+          name: "{{ gitea.deployment.project.name }}"
+    when: project_list.resources|selectattr('metadata.name', 'contains', 'cicd-tools')
+
+  - name: Teardown Operator Subscription for for Red Hat GPTE Gitea Operator
+    kubernetes.core.k8s:
+      state: absent
+      definition:
+        apiVersion: operators.coreos.com/v1alpha1
+        kind: ClusterServiceVersion
+        metadata:
+          name: gitea-operator.v1.3.0
+          namespace: "{{ gitea.operator.subscription.namespace }}"
+
+  - name: Teardown Operator Catalog for Red Hat GPTE Gitea Operator
+    kubernetes.core.k8s:
+      state: absent
+      definition:
+        apiVersion: operators.coreos.com/v1alpha1
+        kind: CatalogSource
+        metadata:
+          name: "{{ gitea.operator.source.name }}"
+          namespace: openshift-marketplace

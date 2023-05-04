@@ -32,12 +32,12 @@
   kubernetes.core.k8s:
     state: present
     src: ../argocd-manifests/cluster-config.yml
-  tags: [always, resources]
+  tags: [never, resources]
 
 - name: Teardown cluster config ApplicationSet
   kubernetes.core.k8s:
     state: absent
-    src: ../cluster-config/argocd-manifests/cluster-config.yml
+    src: ../argocd-manifests/cluster-config.yml
   tags: [never, teardown]
 
 - name: Teardown git repository secret in ArgoCD
